@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo; // WAJIB DI-IMPORT
 
 class Employee extends Model
 {
+    use HasFactory;
+    
     protected $fillable = [ 
         'nama_lengkap', 
         'email', 
@@ -14,5 +18,23 @@ class Employee extends Model
         'alamat', 
         'tanggal_masuk', 
         'status', 
+        'departemen_id', 
+        'jabatan_id', 
     ];
+
+    /**
+     * Get the department that owns the Employee.
+     */
+    public function departemen(): BelongsTo
+    {
+        return $this->belongsTo(Department::class, 'departemen_id');
+    }
+    
+    /**
+     * Get the position that owns the Employee.
+     */
+    public function jabatan(): BelongsTo
+    {
+        return $this->belongsTo(Position::class, 'jabatan_id');
+    }
 }
