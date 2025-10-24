@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Department;
 
 class DepartmentController extends Controller
 {
@@ -11,7 +12,7 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-        $departments = Department::latest()->paginate(5);
+        $departments = Department::withCount('employees')->latest()->paginate(10);
         return view('departments.index', compact('departments'));
     }
 
@@ -29,7 +30,10 @@ class DepartmentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama_departemen' => 'required|string|max:255',
+            'nama_departemen' => 'required|string|max:255|unique:departments,nama_departemen',
+        ], [
+            'nama_departemen.required' => 'Nama departemen wajib diisi',
+            'nama_departemen.unique' => 'Nama departemen sudah ada',
         ]);
 
         Department::create($validated);
@@ -43,7 +47,8 @@ class DepartmentController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $department = Department::with('employees')->findOrFail($id);
+        return view('departments.show', compact('department'));
     }
 
     /**
@@ -61,7 +66,10 @@ class DepartmentController extends Controller
     public function update(Request $request, string $id)
     {
         $validated = $request->validate([
-            'nama_departemen' => 'required|string|max:255',
+            'nama_departemen' => 'required|string|max:255|unique:departments,nama_departemen,' . $id,
+        ], [
+            'nama_departemen.required' => 'Nama departemen wajib diisi',
+            'nama_departemen.unique' => 'Nama departemen sudah ada',
         ]);
 
         $department = Department::findOrFail($id);
@@ -77,6 +85,13 @@ class DepartmentController extends Controller
     public function destroy(string $id)
     {
         $department = Department::findOrFail($id);
+        
+        // Cek apakah departemen memiliki pegawai
+        if ($department->employees()->count() > 0) {
+            return redirect()->route('departments.index')
+                             ->with('error', 'Tidak dapat menghapus departemen yang masih memiliki pegawai.');
+        }
+
         $department->delete();
 
         return redirect()->route('departments.index')

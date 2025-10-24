@@ -65,7 +65,9 @@ class EmployeeController extends Controller
     public function edit(string $id)
     {
         $employee = Employee::find($id);
-        return view('employees.edit', compact('employee'));
+        $departments = Department::all(); 
+        $positions = Position::all();
+        return view('employees.edit', compact('employee', 'departments', 'positions'));
     }
 
     /**
@@ -73,27 +75,35 @@ class EmployeeController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nama_lengkap' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'nomor_telepon' => 'required|string|max:20',
             'tanggal_lahir' => 'required|date',
             'alamat' => 'required|string|max:255',
             'tanggal_masuk' => 'required|date',
-            'status' => 'required|string|max:50',
+            'status' => 'required|in:aktif,nonaktif',
+            'departemen_id' => 'required|exists:departments,id',
+            'jabatan_id' => 'required|exists:positions,id', 
         ]);
+
         $employee = Employee::findOrFail($id);
-        $employee->update($request->only([
-            'nama_lengkap',
-            'email',
-            'nomor_telepon',
-            'tanggal_lahir',
-            'alamat',
-            'tanggal_masuk',
-            'status',
-        ]));
-        return redirect()->route('employees.index');
-            }
+        
+        // Update manual per field
+        $employee->nama_lengkap = $validated['nama_lengkap'];
+        $employee->email = $validated['email'];
+        $employee->nomor_telepon = $validated['nomor_telepon'];
+        $employee->tanggal_lahir = $validated['tanggal_lahir'];
+        $employee->alamat = $validated['alamat'];
+        $employee->tanggal_masuk = $validated['tanggal_masuk'];
+        $employee->status = $validated['status'];
+        $employee->departemen_id = $validated['departemen_id'];
+        $employee->jabatan_id = $validated['jabatan_id'];
+        
+        $employee->save();
+        
+        return redirect()->route('employees.index')->with('success', 'Data pegawai berhasil diupdate!');
+    }
 
     /**
      * Remove the specified resource from storage.

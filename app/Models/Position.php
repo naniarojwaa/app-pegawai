@@ -12,7 +12,7 @@ class Position extends Model
 
     protected $table = 'positions';
 
-    protected $fillable = ['nama']; 
+    protected $fillable = ['nama_jabatan', 'gaji_pokok']; 
 
     /**
      * Get the employees for the position.

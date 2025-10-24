@@ -12,7 +12,7 @@ class Department extends Model
     
     protected $table = 'departments';
 
-    protected $fillable = ['nama']; 
+    protected $fillable = ['nama_departemen']; 
 
     /**
      * Get the employees for the department.
